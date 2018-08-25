@@ -2,6 +2,7 @@
 *.jar
 *.zip
 *.tmp
+*.temp
 *.out
 junit*.properties
 /*.bat
@@ -15,10 +16,6 @@ junit*.properties
 /build
 /lib
 /tmp
-/src/prolog/tmp
 /temp
-/projogGeneratedClasses
 /target
 
-pom.xml*
-deploy*.xml
