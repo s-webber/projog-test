@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
   <groupId>org.projog</groupId>
   <artifactId>projog-test</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.3.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>projog-test</name>
@@ -45,7 +45,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <dependency>
          <groupId>org.projog</groupId>
          <artifactId>projog-core</artifactId>
-         <version>0.2.0</version>
+         <version>0.3.0-SNAPSHOT</version>
       </dependency>
 
       <dependency>
@@ -100,7 +100,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
                               <limit implementation="org.jacoco.report.check.Limit">
                                  <counter>COMPLEXITY</counter>
                                  <value>COVEREDRATIO</value>
-                                 <minimum>0.60</minimum>
+                                 <minimum>0.50</minimum>
                               </limit>
                            </limits>
                         </rule>

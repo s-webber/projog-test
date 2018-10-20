@@ -31,16 +31,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.projog.core.Calculatable;
+import org.projog.core.ArithmeticOperator;
 import org.projog.core.PredicateFactory;
 
 /**
  * Extracts Prolog tests from the comments of Java source files.
  * <p>
- * Produces {@code .txt} and {@code .pl} files for implementations of {@code PredicateFactory} and {@code Calculatable}.
- * The contents of the files are extracted from the comments in the {@code .java} file of the {@code PredicateFactory}
- * or {@code Calculatable}. The {@code .txt} file contains the contents of the Javadoc comment of the class. The
- * {@code .pl} file contains the Prolog syntax contained in the "{@code TEST}" comment at the top of the class.
+ * Produces {@code .txt} and {@code .pl} files for implementations of {@code PredicateFactory} and
+ * {@code ArithmeticOperator}. The contents of the files are extracted from the comments in the {@code .java} file of
+ * the {@code PredicateFactory} or {@code ArithmeticOperator}. The {@code .txt} file contains the contents of the
+ * Javadoc comment of the class. The {@code .pl} file contains the Prolog syntax contained in the "{@code TEST}" comment
+ * at the top of the class.
  *
  * @see ProjogTestExtractorConfig
  * @see ProjogTestRunner
@@ -107,7 +108,7 @@ public final class ProjogTestExtractor {
    }
 
    private static boolean isDocumentable(Class<?> c) {
-      return isConcrete(c) && isPublic(c) && (isPredicateFactory(c) || isCalculatable(c));
+      return isConcrete(c) && isPublic(c) && (isPredicateFactory(c) || isArithmeticOperator(c));
    }
 
    private static boolean isConcrete(Class<?> c) {
@@ -122,8 +123,8 @@ public final class ProjogTestExtractor {
       return PredicateFactory.class.isAssignableFrom(c);
    }
 
-   private static boolean isCalculatable(Class<?> c) {
-      return Calculatable.class.isAssignableFrom(c);
+   private static boolean isArithmeticOperator(Class<?> c) {
+      return ArithmeticOperator.class.isAssignableFrom(c);
    }
 
    private static boolean isJavaSource(File f) {

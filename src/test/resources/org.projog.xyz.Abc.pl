@@ -44,7 +44,7 @@ z(q).
 % Y=6
 %ANSWER
 %OUTPUT hereq
-%ERROR Cannot find calculatable: q
+%ERROR Cannot find arithmetic operator: q
 
 %QUERY z(Z), write(here), write(Z), Y is Z*2
 %OUTPUT here1
@@ -62,7 +62,7 @@ z(q).
 % Z=3
 % Y=6
 %ANSWER
-%ERROR Cannot find calculatable: q
+%ERROR Cannot find arithmetic operator: q
 
 %QUERY z(Z), write(here), write(Z), Y is Z*2
 %OUTPUT here1

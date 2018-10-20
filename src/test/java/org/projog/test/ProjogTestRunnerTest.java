@@ -36,10 +36,10 @@ public class ProjogTestRunnerTest {
       final int expectedErrorCount = 13;
 
       ProjogTestRunner.TestResults r = ProjogTestRunner.runTests(TEST_RESOURCES_DIR);
+      assertIgnoringCarriageReturns(expectedErrorMessages, r.getErrorMessages());
       assertEquals(expectedScriptsCount, r.getScriptsCount());
       assertEquals(expectedQueryCount, r.getQueryCount());
       assertEquals(expectedErrorCount, r.getErrorCount());
-      assertIgnoringCarriageReturns(expectedErrorMessages, r.getErrorMessages());
       assertTrue(r.hasFailures());
       assertTrue(r.getSummary().startsWith("Completed " + expectedQueryCount + " queries from " + expectedScriptsCount + " files with " + expectedErrorCount + " failures"));
 
