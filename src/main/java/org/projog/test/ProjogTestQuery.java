@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 S. Webber
+ * Copyright 2013 S. Webber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ public final class ProjogTestQuery implements ProjogTestContent {
    private final List<ProjogTestAnswer> answers = new ArrayList<>();
    private final String prologQuery;
    private boolean continuesUntilFails;
+   private boolean quitsBeforeFindingAllAnswers;
    private String expectedExceptionMessage;
    private String expectedOutput = "";
 
@@ -46,8 +47,16 @@ public final class ProjogTestQuery implements ProjogTestContent {
       return !isContinuesUntilFails();
    }
 
-   void setContinuesUntilFails(boolean continuesUntilFails) {
-      this.continuesUntilFails = continuesUntilFails;
+   void setContinuesUntilFails() {
+      this.continuesUntilFails = true;
+   }
+
+   boolean doesQuitBeforeFindingAllAnswers() {
+      return quitsBeforeFindingAllAnswers;
+   }
+
+   void setQuitsBeforeFindingAllAnswers() {
+      quitsBeforeFindingAllAnswers = true;
    }
 
    public String getExpectedExceptionMessage() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 S. Webber
+ * Copyright 2013 S. Webber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,14 +167,14 @@ public final class ProjogTestRunner implements Observer {
       debug("QUERY: " + query.getPrologQuery());
       testResults.queryCount++;
 
-      Iterator<ProjogTestAnswer> itr = null;
+      Iterator<ProjogTestAnswer> expectedAnswers = null;
       Term redirectedOutputFileHandle = null;
       boolean parsedQuery = false;
       try {
          QueryStatement stmt = projog.query(query.getPrologQuery() + ".");
          QueryResult result = stmt.getResult();
          parsedQuery = true;
-         itr = query.getAnswers().iterator();
+         expectedAnswers = query.getAnswers().iterator();
 
          boolean isExhausted = result.isExhausted();
          redirectedOutputFileHandle = redirectOutput();
@@ -184,10 +184,14 @@ public final class ProjogTestRunner implements Observer {
                throw new RuntimeException("isExhausted() was true when there were still more answers available");
             }
             debug("ANSWERS:");
-            if (!itr.hasNext()) {
-               throw new RuntimeException("More answers than expected");
+            if (!expectedAnswers.hasNext()) {
+               if (query.doesQuitBeforeFindingAllAnswers()) {
+                  return;
+               } else {
+                  throw new RuntimeException("More answers than expected");
+               }
             }
-            ProjogTestAnswer correctAnswer = itr.next();
+            ProjogTestAnswer correctAnswer = expectedAnswers.next();
             checkOutput(correctAnswer);
             checkAnswer(result, correctAnswer);
 
@@ -196,6 +200,9 @@ public final class ProjogTestRunner implements Observer {
             closeOutput(redirectedOutputFileHandle);
             redirectedOutputFileHandle = redirectOutput();
             spypointSourceIds.clear();
+         }
+         if (query.doesQuitBeforeFindingAllAnswers()) {
+            throw new RuntimeException("Found all answers before quit");
          }
          if (isExhausted == query.isContinuesUntilFails()) {
             if (isInterpretedMode() && query.doesNotContinueUntilFails()) {
@@ -221,7 +228,7 @@ public final class ProjogTestRunner implements Observer {
             closeOutput(redirectedOutputFileHandle);
          }
       }
-      if (parsedQuery && itr.hasNext()) {
+      if (parsedQuery && expectedAnswers.hasNext()) {
          throw new RuntimeException("Less answers than expected for: " + query.getPrologQuery());
       }
    }

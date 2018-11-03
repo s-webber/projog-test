@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 S. Webber
+ * Copyright 2013 S. Webber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +141,7 @@ public final class ProjogTestParser implements Closeable {
    private static final String TRUE_TAG = "%TRUE";
    private static final String TRUE_NO_TAG = "%TRUE_NO";
    private static final String NO_TAG = "%NO";
+   private static final String QUIT_TAG = "%QUIT";
    private static final String FALSE_TAG = "%FALSE";
    private static final String QUERY_TAG = "%QUERY";
    private static final String ANSWER_TAG = "%ANSWER";
@@ -189,7 +190,7 @@ public final class ProjogTestParser implements Closeable {
          return new ProjogTestLink(getText(line).trim());
       } else if (line.startsWith(TRUE_NO_TAG)) {
          ProjogTestQuery query = createSingleCorrectAnswerWithNoAssignmentsQuery(line);
-         query.setContinuesUntilFails(true);
+         query.setContinuesUntilFails();
          return query;
       } else if (line.startsWith(TRUE_TAG)) {
          return createSingleCorrectAnswerWithNoAssignmentsQuery(line);
@@ -197,7 +198,7 @@ public final class ProjogTestParser implements Closeable {
          String queryStr = getText(line);
          // no answers
          ProjogTestQuery query = new ProjogTestQuery(queryStr);
-         query.setContinuesUntilFails(true);
+         query.setContinuesUntilFails();
          return query;
       } else if (line.startsWith(QUERY_TAG)) {
          return getQuery(line);
@@ -227,13 +228,15 @@ public final class ProjogTestParser implements Closeable {
       if (nextLine != null && nextLine.startsWith(OUTPUT_TAG)) {
          String expectedOutput = readLinesUntilNextTag(nextLine, OUTPUT_TAG);
          query.setExpectedOutput(expectedOutput);
-         query.setContinuesUntilFails(true);
+         query.setContinuesUntilFails();
 
          mark();
          nextLine = br.readLine();
       }
-      if (nextLine != null && nextLine.startsWith(NO_TAG)) {
-         query.setContinuesUntilFails(true);
+      if (nextLine != null && equalsIgnoringLeadingAndTrailingWhitespace(nextLine, QUIT_TAG)) {
+         query.setQuitsBeforeFindingAllAnswers();
+      } else if (nextLine != null && equalsIgnoringLeadingAndTrailingWhitespace(nextLine, NO_TAG)) {
+         query.setContinuesUntilFails();
       } else if (nextLine != null && nextLine.startsWith(EXCEPTION_TAG)) {
          String expectedExceptionMessage = readLinesUntilNextTag(nextLine, EXCEPTION_TAG);
          query.setExpectedExceptionMessage(expectedExceptionMessage);
@@ -273,7 +276,7 @@ public final class ProjogTestParser implements Closeable {
       if (line.startsWith(ANSWER_NO_VARIABLES_TAG)) {
          // query succeeds but no variables to check
          return answer;
-      } else if (line.trim().equals(ANSWER_TAG)) {
+      } else if (equalsIgnoringLeadingAndTrailingWhitespace(line, ANSWER_TAG)) {
          // query succeeds with variables to check
          addAssignments(answer);
          return answer;
@@ -369,6 +372,10 @@ public final class ProjogTestParser implements Closeable {
       } else {
          return line.substring(spacePos + 1).trim();
       }
+   }
+
+   private static boolean equalsIgnoringLeadingAndTrailingWhitespace(String a, String b) {
+      return a.trim().equals(b.trim());
    }
 
    private void mark() throws IOException {
