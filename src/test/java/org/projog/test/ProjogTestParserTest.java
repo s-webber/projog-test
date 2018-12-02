@@ -154,16 +154,16 @@ public class ProjogTestParserTest {
 
    @Test
    public void testMultiLineOutput() throws IOException {
-      ProjogTestQuery query = parseSingleItem("%QUERY X = 9", "%OUTPUT", "% example of", "% multi line output", "%OUTPUT", "%ANSWER/");
+      ProjogTestQuery query = parseSingleItem("%QUERY X = 9", "%OUTPUT", "%example of   ", "% multi line output", "%OUTPUT", "%ANSWER/");
 
       List<ProjogTestAnswer> answers = query.getAnswers();
       assertEquals(1, answers.size());
-      assertEquals("example of" + System.lineSeparator() + "multi line output", answers.get(0).getExpectedOutput());
+      assertEquals("example of   " + System.lineSeparator() + " multi line output", answers.get(0).getExpectedOutput());
    }
 
    @Test
    public void testOutputAndError() throws IOException {
-      ProjogTestQuery query = parseSingleItem("%QUERY X = 9", "%OUTPUT output from first attempt", "%ANSWER/", "%OUTPUT output from retry", "%ERROR an error message");
+      ProjogTestQuery query = parseSingleItem("%QUERY X = 9", "%OUTPUT output from first attempt  ", "%ANSWER/", "%OUTPUT output from retry", "%ERROR an error message");
 
       List<ProjogTestAnswer> answers = query.getAnswers();
       assertEquals(1, answers.size());

@@ -306,12 +306,12 @@ public final class ProjogTestParser implements Closeable {
    }
 
    private String readLinesUntilNextTag(String line, String tagName) throws IOException {
-      String expectedOutput = getText(line).trim();
+      String expectedOutput = getText(line);
       if (expectedOutput.length() == 0) {
          boolean first = true;
          StringBuilder sb = new StringBuilder();
          while (!(line = br.readLine()).startsWith(tagName)) {
-            line = line.trim().substring(1).trim();
+            line = line.substring(line.indexOf('%') + 1);
             boolean addNewLine = (first && line.length() == 0) || !first;
             if (addNewLine) {
                sb.append(System.lineSeparator());
