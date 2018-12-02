@@ -46,6 +46,9 @@ public final class ProjogTestAnswer {
    }
 
    void addAssignment(String variableId, String expectedValue) {
+      if (assignments.containsKey(variableId)) {
+         throw new IllegalStateException("Duplicate values provided for variable: " + variableId);
+      }
       assignments.put(variableId, expectedValue);
    }
 
