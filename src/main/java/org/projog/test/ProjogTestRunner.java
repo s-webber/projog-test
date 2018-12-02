@@ -358,7 +358,7 @@ public final class ProjogTestRunner implements Observer {
       for (String variableId : variableIds) {
          Term variable = result.getTerm(variableId);
          String actualTerm;
-         if (variable.getType() == TermType.NAMED_VARIABLE) {
+         if (variable.getType().isVariable()) {
             actualTerm = "UNINSTANTIATED VARIABLE";
          } else {
             actualTerm = projog.toString(variable);
