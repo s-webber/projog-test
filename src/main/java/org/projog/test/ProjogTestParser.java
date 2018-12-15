@@ -306,22 +306,22 @@ public final class ProjogTestParser implements Closeable {
    }
 
    private String readLinesUntilNextTag(String line, String tagName) throws IOException {
-      String expectedOutput = getText(line);
-      if (expectedOutput.length() == 0) {
-         boolean first = true;
+      String textOnSameLineAsTag = getText(line);
+      if (textOnSameLineAsTag.length() > 0) {
+         return textOnSameLineAsTag;
+      } else {
          StringBuilder sb = new StringBuilder();
+         boolean first = true;
          while (!(line = br.readLine()).startsWith(tagName)) {
-            line = line.substring(line.indexOf('%') + 1);
-            boolean addNewLine = (first && line.length() == 0) || !first;
-            if (addNewLine) {
+            if (first) {
+               first = false;
+            } else {
                sb.append(System.lineSeparator());
             }
-            sb.append(line);
-            first = false;
+            sb.append(line.substring(line.indexOf('%') + 1));
          }
-         expectedOutput = sb.toString();
+         return sb.toString();
       }
-      return expectedOutput;
    }
 
    private String getComment(final String line) throws IOException {

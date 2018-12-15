@@ -33,7 +33,7 @@ public class ProjogTestRunnerTest {
       final String expectedErrorMessages = getExpectedErrorMessages();
       final int expectedScriptsCount = 4;
       final int expectedQueryCount = 23;
-      final int expectedErrorCount = 13;
+      final int expectedErrorCount = 16;
 
       ProjogTestRunner.TestResults r = ProjogTestRunner.runTests(TEST_RESOURCES_DIR);
       assertIgnoringCarriageReturns(expectedErrorMessages, r.getErrorMessages());
