@@ -36,9 +36,9 @@ import org.projog.api.QueryStatement;
 import org.projog.core.KnowledgeBaseUtils;
 import org.projog.core.ProjogException;
 import org.projog.core.event.ProjogEvent;
+import org.projog.core.event.ProjogEventType;
 import org.projog.core.term.Atom;
 import org.projog.core.term.Term;
-import org.projog.core.term.TermType;
 
 /**
  * Runs tests defined in Prolog files and compares actual output against expected results.
@@ -171,13 +171,15 @@ public final class ProjogTestRunner implements Observer {
       Term redirectedOutputFileHandle = null;
       boolean parsedQuery = false;
       try {
-         QueryStatement stmt = projog.query(query.getPrologQuery() + ".");
+         redirectedOutputFileHandle = redirectOutput();
+
+         // TODO make it configurable to do either ".createPlan().createStatement()" or just ".createStatement()"
+         QueryStatement stmt = projog.createPlan(query.getPrologQuery() + ".").createStatement();
          QueryResult result = stmt.getResult();
          parsedQuery = true;
          expectedAnswers = query.getAnswers().iterator();
 
          boolean isExhausted = result.isExhausted();
-         redirectedOutputFileHandle = redirectOutput();
          spypointSourceIds.clear();
          while (result.next()) {
             if (isExhausted) {
@@ -224,9 +226,7 @@ public final class ProjogTestRunner implements Observer {
             throw new RuntimeException("Expected: >" + expected + "< but got: >" + actual + "<", pe);
          }
       } finally {
-         if (parsedQuery) {
-            closeOutput(redirectedOutputFileHandle);
-         }
+         closeOutput(redirectedOutputFileHandle);
       }
       if (parsedQuery && expectedAnswers.hasNext()) {
          throw new RuntimeException("Less answers than expected for: " + query.getPrologQuery());
@@ -241,14 +241,18 @@ public final class ProjogTestRunner implements Observer {
     */
    private Term redirectOutput() {
       redirectedOutputFile.delete();
-      QueryStatement openStmt = projog.query("open('" + redirectedOutputFile.getName() + "',write,Z).");
+      QueryStatement openStmt = projog.createStatement("open('" + redirectedOutputFile.getName() + "',write,Z).");
       QueryResult openResult = openStmt.getResult();
-      openResult.next();
+      if (!openResult.next()) {
+         throw new IllegalStateException();
+      }
       Term redirectedOutputFileHandle = openResult.getTerm("Z");
-      QueryStatement setOutputStmt = projog.query("set_output(Z).");
+      QueryStatement setOutputStmt = projog.createStatement("set_output(Z).");
+      setOutputStmt.setTerm("Z", redirectedOutputFileHandle);
       QueryResult setOutputResult = setOutputStmt.getResult();
-      setOutputResult.setTerm("Z", redirectedOutputFileHandle);
-      setOutputResult.next();
+      if (!setOutputResult.next()) {
+         throw new IllegalStateException();
+      }
       return redirectedOutputFileHandle;
    }
 
@@ -312,7 +316,7 @@ public final class ProjogTestRunner implements Observer {
       for (int i = 0; i < actualLines.length; i++) {
          String actualLine = actualLines[i];
          String expectedLine = expectedLines[i];
-         if (!isEqualIgnoringUpperCaseCharacters(i, actualLine, expectedLine)) {
+         if (!isEqualIgnoringUpperCaseCharacters(actualLine, expectedLine)) {
             return false;
          }
       }
@@ -320,12 +324,12 @@ public final class ProjogTestRunner implements Observer {
       return true;
    }
 
-   private static boolean isEqualIgnoringUpperCaseCharacters(int i, String actualLine, String expectedLine) {
+   private static boolean isEqualIgnoringUpperCaseCharacters(String actualLine, String expectedLine) {
       if (actualLine.length() != expectedLine.length()) {
          return false;
       }
 
-      for (int i2 = 0; i2 < actualLine.length(); i2++) {
+      for (int i = 0; i < actualLine.length(); i++) {
          char c1 = actualLine.charAt(i);
          char c2 = expectedLine.charAt(i);
          if (c1 != c2 && (!Character.isUpperCase(c1) || !Character.isUpperCase(c2))) {
@@ -342,10 +346,12 @@ public final class ProjogTestRunner implements Observer {
     * @see #redirectOutput()
     */
    private void closeOutput(Term redirectedOutputFileHandle) {
-      QueryStatement closeStmt = projog.query("close(Z).");
+      QueryStatement closeStmt = projog.createStatement("close(Z).");
+      closeStmt.setTerm("Z", redirectedOutputFileHandle);
       QueryResult closeResult = closeStmt.getResult();
-      closeResult.setTerm("Z", redirectedOutputFileHandle);
-      closeResult.next();
+      if (!closeResult.next()) {
+         throw new IllegalStateException();
+      }
       redirectedOutputFile.delete();
    }
 
@@ -366,8 +372,13 @@ public final class ProjogTestRunner implements Observer {
 
          String expectedTerm = correctAnswer.getAssignedValue(variableId);
          if (expectedTerm == null) {
-            throw new RuntimeException(
-                        variableId + " (" + variable + ") was not expected to be assigned to anything but was to: " + actualTerm + " " + correctAnswer.getAssignments());
+            throw new RuntimeException(variableId
+                                       + " ("
+                                       + variable
+                                       + ") was not expected to be assigned to anything but was to: "
+                                       + actualTerm
+                                       + " "
+                                       + correctAnswer.getAssignments());
          } else if (!actualTerm.equals(expectedTerm)) {
             throw new RuntimeException(variableId + " (" + variable + ") assigned to: " + actualTerm + " not: " + expectedTerm + " " + correctAnswer.getAssignments());
          }
@@ -382,19 +393,15 @@ public final class ProjogTestRunner implements Observer {
    @Override
    public void update(Observable o, Object arg) {
       ProjogEvent event = (ProjogEvent) arg;
-      // currently system tests do not include expectations about WARN or INFO events - so don't check them
-      switch (event.getType()) {
-         case WARN:
-            // log to console
-            println(event.getType() + " " + event.getMessage());
-            break;
-         case INFO:
-            // ignore
-            break;
-         default:
-            String message = generateLogMessageForEvent(event);
-            writeLogMessage(message);
+      // ignore events that are just warning that a predicate is undefined
+      if (!isUnknownPredicateWarning(event)) {
+         String message = generateLogMessageForEvent(event);
+         writeLogMessage(message);
       }
+   }
+
+   private boolean isUnknownPredicateWarning(ProjogEvent event) {
+      return event.getType() == ProjogEventType.WARN && event.getMessage().startsWith("Not defined: ");
    }
 
    /**
@@ -417,10 +424,12 @@ public final class ProjogTestRunner implements Observer {
    }
 
    private void writeLogMessage(String message) {
-      QueryStatement openStmt = projog.query("write(Message), nl.");
+      QueryStatement openStmt = projog.createStatement("write(Message), nl.");
+      openStmt.setTerm("Message", new Atom(message));
       QueryResult openResult = openStmt.getResult();
-      openResult.setTerm("Message", new Atom(message));
-      openResult.next();
+      if (!openResult.next()) {
+         throw new IllegalStateException();
+      }
    }
 
    private boolean isInterpretedMode() {
