@@ -36,7 +36,6 @@ import org.projog.api.QueryStatement;
 import org.projog.core.KnowledgeBaseUtils;
 import org.projog.core.ProjogException;
 import org.projog.core.event.ProjogEvent;
-import org.projog.core.event.ProjogEventType;
 import org.projog.core.term.Atom;
 import org.projog.core.term.Term;
 
@@ -393,15 +392,20 @@ public final class ProjogTestRunner implements Observer {
    @Override
    public void update(Observable o, Object arg) {
       ProjogEvent event = (ProjogEvent) arg;
-      // ignore events that are just warning that a predicate is undefined
-      if (!isUnknownPredicateWarning(event)) {
-         String message = generateLogMessageForEvent(event);
-         writeLogMessage(message);
+      // currently system tests do not include expectations about WARN or INFO events - so don't check them
+      // TODO start including WARN and INFO events in test expectations
+      switch (event.getType()) {
+         case WARN:
+            // log to console
+            println(event.getType() + " " + event.getMessage());
+            break;
+         case INFO:
+            // ignore
+            break;
+         default:
+            String message = generateLogMessageForEvent(event);
+            writeLogMessage(message);
       }
-   }
-
-   private boolean isUnknownPredicateWarning(ProjogEvent event) {
-      return event.getType() == ProjogEventType.WARN && event.getMessage().startsWith("Not defined: ");
    }
 
    /**
