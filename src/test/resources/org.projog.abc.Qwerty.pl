@@ -4,6 +4,4 @@
 %FALSE 4>8
 %FALSE 4>2
 
-%QUERY \+ true
-%ANSWER/
-%NO
+%TRUE \+ true

@@ -1,6 +1,6 @@
-org.projog.abc.Qwerty.pl 1=2 class java.lang.RuntimeException Less answers than expected for: 1=2
+org.projog.abc.Qwerty.pl 1=2 class java.lang.RuntimeException isExhausted was: false but query.isContinuesUntilFails was: false
 org.projog.abc.Qwerty.pl 4>2 class java.lang.RuntimeException More answers than expected
-org.projog.abc.Qwerty.pl \+ true class java.lang.RuntimeException Less answers than expected for: \+ true
+org.projog.abc.Qwerty.pl \+ true class java.lang.RuntimeException isExhausted was: false but query.isContinuesUntilFails was: false
 org.projog.qwe.Fghjkl.pl X is a class java.lang.RuntimeException Expected: >Cannot find arithmetic operator: a< but got: >Cannot find arithmetic operator: a/0<
 org.projog.qwe.Fghjkl.pl X is a class java.lang.RuntimeException Expected: >Cannot find arithmetic operator: z< but got: >Cannot find arithmetic operator: a/0<
 org.projog.qwe.Fghjkl.pl X is a class java.lang.RuntimeException Expected: >null< but got: >Cannot find arithmetic operator: a/0<
