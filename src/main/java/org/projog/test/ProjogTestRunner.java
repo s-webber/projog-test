@@ -299,7 +299,7 @@ public final class ProjogTestRunner implements ProjogListener {
          if (variable.getType().isVariable()) {
             actualTerm = "UNINSTANTIATED VARIABLE";
          } else {
-            actualTerm = projog.toString(variable);
+            actualTerm = projog.formatTerm(variable);
          }
 
          String expectedTerm = correctAnswer.getAssignedValue(variableId);
