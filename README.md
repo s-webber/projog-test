@@ -7,5 +7,5 @@ Used by the Projog project to support the testing of Prolog.
 
 ## See Also
 
-* [Projog Website](http://www.projog.org/)
+* [Projog Website](http://projog.org)
 * [Projog GitHub Page](https://github.com/s-webber/projog)

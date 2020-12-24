@@ -11,7 +11,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
   <name>projog-test</name>
   <description>Supports testing of Prolog using Projog.</description>
-  <url>http://www.projog.org/</url>
+  <url>http://projog.org</url>
 
   <licenses>
     <license>
