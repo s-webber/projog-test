@@ -173,7 +173,7 @@ public final class ProjogTestRunner implements ProjogListener {
 
          // TODO make it configurable to do either ".createPlan().createStatement()" or just ".createStatement()"
          QueryStatement stmt = projog.createPlan(query.getPrologQuery() + ".").createStatement();
-         QueryResult result = stmt.getResult();
+         QueryResult result = stmt.executeQuery();
          parsedQuery = true;
          expectedAnswers = query.getAnswers().iterator();
 
@@ -233,14 +233,14 @@ public final class ProjogTestRunner implements ProjogListener {
    private Term redirectOutput() {
       redirectedOutputFile.delete();
       QueryStatement openStmt = projog.createStatement("open('" + redirectedOutputFile.getName() + "',write,Z).");
-      QueryResult openResult = openStmt.getResult();
+      QueryResult openResult = openStmt.executeQuery();
       if (!openResult.next()) {
          throw new IllegalStateException();
       }
       Term redirectedOutputFileHandle = openResult.getTerm("Z");
       QueryStatement setOutputStmt = projog.createStatement("set_output(Z).");
       setOutputStmt.setTerm("Z", redirectedOutputFileHandle);
-      QueryResult setOutputResult = setOutputStmt.getResult();
+      QueryResult setOutputResult = setOutputStmt.executeQuery();
       if (!setOutputResult.next()) {
          throw new IllegalStateException();
       }
@@ -280,7 +280,7 @@ public final class ProjogTestRunner implements ProjogListener {
    private void closeOutput(Term redirectedOutputFileHandle) {
       QueryStatement closeStmt = projog.createStatement("close(Z).");
       closeStmt.setTerm("Z", redirectedOutputFileHandle);
-      QueryResult closeResult = closeStmt.getResult();
+      QueryResult closeResult = closeStmt.executeQuery();
       if (!closeResult.next()) {
          throw new IllegalStateException();
       }
@@ -375,7 +375,7 @@ public final class ProjogTestRunner implements ProjogListener {
    private void writeLogMessage(String message) {
       QueryStatement openStmt = projog.createStatement("write(Message), nl.");
       openStmt.setTerm("Message", new Atom(message));
-      QueryResult openResult = openStmt.getResult();
+      QueryResult openResult = openStmt.executeQuery();
       if (!openResult.next()) {
          throw new IllegalStateException();
       }
