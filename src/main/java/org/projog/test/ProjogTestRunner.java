@@ -32,9 +32,9 @@ import org.projog.api.Projog;
 import org.projog.api.QueryResult;
 import org.projog.api.QueryStatement;
 import org.projog.core.ProjogException;
-import org.projog.core.SpyPoints.SpyPointEvent;
-import org.projog.core.SpyPoints.SpyPointExitEvent;
 import org.projog.core.event.ProjogListener;
+import org.projog.core.event.SpyPoints.SpyPointEvent;
+import org.projog.core.event.SpyPoints.SpyPointExitEvent;
 import org.projog.core.term.Atom;
 import org.projog.core.term.Term;
 

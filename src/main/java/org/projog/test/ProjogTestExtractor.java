@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.projog.core.ArithmeticOperator;
-import org.projog.core.PredicateFactory;
+import org.projog.core.math.ArithmeticOperator;
+import org.projog.core.predicate.PredicateFactory;
 
 /**
  * Extracts Prolog tests from the comments of Java source files.
