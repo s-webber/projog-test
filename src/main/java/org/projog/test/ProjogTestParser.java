@@ -15,11 +15,18 @@
  */
 package org.projog.test;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
+import static org.projog.test.Markup.ERROR;
+import static org.projog.test.Markup.FAIL;
+import static org.projog.test.Markup.LINK;
+import static org.projog.test.Markup.NO;
+import static org.projog.test.Markup.OUTPUT;
+import static org.projog.test.Markup.QUERY;
+import static org.projog.test.Markup.QUIT;
+import static org.projog.test.Markup.TRUE;
+import static org.projog.test.Markup.TRUE_NO;
+import static org.projog.test.Markup.YES;
+
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,38 +45,46 @@ import java.util.List;
  * <p>
  * Examples of how system tests can be specified using comments (i.e. lines prefixed with a <code>%</code>) are:
  * <ol>
- * <li>Test that that the query <code>?- test().</code> succeeds once and no attempt will be made to find an alternative
+ * <li>Test that that the query <code>?- test.</code> succeeds once and no attempt will be made to find an alternative
  * solution: <pre>
- * %TRUE test1()
+ * %TRUE test
  * </pre></li>
- * <li>Test that that the query <code>?- test().</code> succeeds once and will fail when an attempt is made to find an
+ * <li>Test that that the query <code>?- test.</code> succeeds once and will fail when an attempt is made to find an
  * alternative solution: <pre>
- * %TRUE_NO test1()
+ * %TRUE_NO test
  * </pre></li>
- * <li>Test that that the query <code>?- test().</code> will fail on the first attempt to evaluate it: <pre>
- * %FALSE test1()
+ * <li>Test that that the query <code>?- test.</code> will fail on the first attempt to evaluate it: <pre>
+ * %FAIL test
  * </pre></li>
- * <li>Test that that the query <code>?- test().</code> will succeed three times and there will be no attempt to
+ * <li>Test that that the query <code>?- test.</code> will succeed three times and there will be no attempt to evaluate
+ * it for a fourth time: <pre>
+ * %?- test
+ * %YES
+ * %YES
+ * %YES
+ * </pre></li>
+ * <li>Test that that the query <code>?- test.</code> will succeed three times and will fail when an attempt is made to
  * evaluate it for a fourth time: <pre>
- * %QUERY test()
- * %ANSWER/
- * %ANSWER/
- * %ANSWER/
- * </pre></li>
- * <li>Test that that the query <code>?- test().</code> will succeed three times and will fail when an attempt is made
- * to evaluate it for a fourth time: <pre>
- * %QUERY test()
- * %ANSWER/
- * %ANSWER/
- * %ANSWER/
+ * %?- test
+ * %YES
+ * %YES
+ * %YES
  * %NO
+ * </pre></li> </pre></li>
+ * <li>Test that that the query <code>?- repeat.</code> will succeed three times. The {@code %QUIT} markup indicates
+ * that after the third attempt then stop testing for alternative solutions, even though they may exist. <pre>
+ * %?- repeat
+ * %YES
+ * %YES
+ * %YES
+ * %QUIT
  * </pre></li>
  * <li>Test that that the query <code>?- test(X).</code> will succeed three times and there will be no attempt to
  * evaluate it for a fourth time, specifying expectations about variable unification: <pre>
- * %QUERY test(X)
- * %ANSWER X=a
- * %ANSWER X=b
- * %ANSWER X=c
+ * %?- test(X)
+ * % X=a
+ * % X=b
+ * % X=c
  * </pre> The test contains the following expectations about variable unification:
  * <ul>
  * <li>After the first attempt the variable <code>X</code> will be instantiated to <code>a</code>.</li>
@@ -79,19 +94,13 @@ import java.util.List;
  * </li>
  * <li>Test that that the query <code>?- test(X,Y).</code> will succeed three times and will fail when an attempt is
  * made to evaluate it for a fourth time, specifying expectations about variable unification: <pre>
- * %QUERY test(X,Y)
- * %ANSWER
- * X=a
- * Y=1
- * %ANSWER
- * %ANSWER
- * X=b
- * Y=2
- * %ANSWER
- * %ANSWER
- * X=c
- * Y=3
- * %ANSWER
+ * %?- test(X,Y)
+ * % X=a
+ * % Y=1
+ * % X=b
+ * % Y=2
+ * % X=c
+ * % Y=3
  * %NO
  * </pre> The test contains the following expectations about variable unification:
  * <ul>
@@ -103,29 +112,30 @@ import java.util.List;
  * <code>Y</code> will be instantiated to <code>3</code>.</li>
  * </ul>
  * </li>
- * <li>Test that that the query <code>?- test().</code> will succeed three times and there will be no attempt to
- * evaluate it for a fourth time, specifying expectations about what should be written to standard output: <pre>
- * %QUERY repeat(3), write('hello world'), nl
+ * <li>Test that that the query <code>?- repeat(3), write('hello world'), nl.</code> will succeed three times and there
+ * will be no attempt to evaluate it for a fourth time, specifying expectations about what should be written to standard
+ * output: <pre>
+ * %?- repeat(3), write('hello world'), nl
  * %OUTPUT
  * % hello world
  * %
  * %OUTPUT
- * %ANSWER/
+ * %YES
  * %OUTPUT
  * % hello world
  * %
  * %OUTPUT
- * %ANSWER/
+ * %YES
  * %OUTPUT
  * % hello world
  * %
  * %OUTPUT
- * %ANSWER/
+ * %YES
  * </pre> The test contains expectations that every evaluation will cause the text <code>hello world</code> and a
  * new-line character to be written to the standard output stream.</li>
  * <li>Test that while evaluating the query <code>?- repeat(X).</code> an exception will be thrown with a particular
  * message: <pre>
- * %QUERY repeat(X)
+ * %?- repeat(X)
  * %ERROR Expected Numeric but got: NAMED_VARIABLE with value: X
  * </pre></li>
  * <li>The following would be ignored when running the system tests but would be used when constructing the web based
@@ -136,28 +146,18 @@ import java.util.List;
  * </p>
  * <img src="doc-files/ProjogTestParser.png">
  */
-public final class ProjogTestParser implements Closeable {
+public final class ProjogTestParser {
    private static final String COMMENT_CHARACTER = "%";
-   private static final String TRUE_TAG = "%TRUE";
-   private static final String TRUE_NO_TAG = "%TRUE_NO";
-   private static final String NO_TAG = "%NO";
-   private static final String QUIT_TAG = "%QUIT";
-   private static final String FALSE_TAG = "%FALSE";
-   private static final String QUERY_TAG = "%QUERY";
-   private static final String ANSWER_TAG = "%ANSWER";
-   private static final String ANSWER_NO_VARIABLES_TAG = "%ANSWER/";
-   private static final String OUTPUT_TAG = "%OUTPUT";
-   private static final String EXCEPTION_TAG = "%ERROR";
-   private static final String LINK_TAG = "%LINK";
 
-   private final BufferedReader br;
+   private final LookAheadLineReader br;
 
    /**
     * @throws RuntimeException if script has no tests and no links
     */
    static List<ProjogTestQuery> getQueries(File testScript) {
       boolean hasLinks = false;
-      try (ProjogTestParser p = new ProjogTestParser(testScript)) {
+      try {
+         ProjogTestParser p = new ProjogTestParser(testScript);
          List<ProjogTestQuery> queries = new ArrayList<>();
          ProjogTestContent c;
          while ((c = p.getNext()) != null) {
@@ -168,51 +168,55 @@ public final class ProjogTestParser implements Closeable {
             }
          }
          if (queries.isEmpty() && !hasLinks) {
-            throw new RuntimeException("could not find any tests or links in: " + testScript);
+            throw new IllegalStateException("Could not find any tests or links");
          }
          return queries;
-      } catch (IOException e) {
+      } catch (Exception e) {
          throw new RuntimeException("Exception parsing test script: " + testScript, e);
       }
    }
 
-   public ProjogTestParser(File testScript) throws FileNotFoundException {
-      FileReader fr = new FileReader(testScript);
-      br = new BufferedReader(fr);
+   ProjogTestParser(File testScript) throws IOException {
+      br = new LookAheadLineReader(testScript);
    }
 
-   public ProjogTestContent getNext() throws IOException {
-      final String line = br.readLine();
-      if (line == null) {
-         // end of file
-         return null;
-      } else if (line.startsWith(LINK_TAG)) {
-         return new ProjogTestLink(getText(line).trim());
-      } else if (line.startsWith(TRUE_NO_TAG)) {
-         ProjogTestQuery query = createSingleCorrectAnswerWithNoAssignmentsQuery(line);
-         query.setContinuesUntilFails();
-         return query;
-      } else if (line.startsWith(TRUE_TAG)) {
-         return createSingleCorrectAnswerWithNoAssignmentsQuery(line);
-      } else if (line.startsWith(FALSE_TAG)) {
-         String queryStr = getText(line);
-         // no answers
-         ProjogTestQuery query = new ProjogTestQuery(queryStr);
-         query.setContinuesUntilFails();
-         return query;
-      } else if (line.startsWith(QUERY_TAG)) {
-         return getQuery(line);
-      } else if (isStandardComment(line)) {
-         return new ProjogTestComment(getComment(line));
-      } else if (isMarkupComment(line)) {
-         throw new IllegalArgumentException("Unknown sys-test markup: " + line);
-      } else {
-         return new ProjogTestCode(line);
+   public ProjogTestContent getNext() {
+      try {
+         final String line = br.readLine();
+         if (line == null) {
+            // end of file
+            return null;
+         } else if (LINK.isMatch(line)) {
+            return new ProjogTestLink(LINK.parseText(line));
+         } else if (TRUE_NO.isMatch(line)) {
+            ProjogTestQuery query = createSingleCorrectAnswerWithNoAssignmentsQuery(line, TRUE_NO);
+            query.setContinuesUntilFails();
+            return query;
+         } else if (TRUE.isMatch(line)) {
+            return createSingleCorrectAnswerWithNoAssignmentsQuery(line, TRUE);
+         } else if (FAIL.isMatch(line)) {
+            String queryStr = FAIL.parseText(line);
+            // no answers
+            ProjogTestQuery query = new ProjogTestQuery(queryStr);
+            query.setContinuesUntilFails();
+            return query;
+         } else if (QUERY.isMatch(line)) {
+            return getQuery(line);
+         } else if (isIllegalComment(line)) {
+            throw new IllegalArgumentException("Unknown sys-test markup: " + line);
+         } else if (isStandardComment(line)) {
+            return new ProjogTestComment(getComment(line));
+         } else {
+            return new ProjogTestCode(line);
+         }
+      } catch (Exception e) {
+         String message = "Line number: " + br.getLineNumber() + " line: " + br.getLine();
+         throw new RuntimeException(message, e);
       }
    }
 
-   private ProjogTestQuery createSingleCorrectAnswerWithNoAssignmentsQuery(String line) {
-      String queryStr = getText(line);
+   private ProjogTestQuery createSingleCorrectAnswerWithNoAssignmentsQuery(String line, Markup markup) {
+      String queryStr = markup.parseText(line);
       ProjogTestQuery queryWithSingleCorrectAnswer = new ProjogTestQuery(queryStr);
       // single correct answer with no assignments
       queryWithSingleCorrectAnswer.getAnswers().add(new ProjogTestAnswer());
@@ -220,99 +224,130 @@ public final class ProjogTestParser implements Closeable {
    }
 
    private ProjogTestQuery getQuery(final String line) throws IOException {
-      String queryStr = getText(line);
+      String queryStr = QUERY.parseText(line);
       ProjogTestQuery query = new ProjogTestQuery(queryStr);
       query.getAnswers().addAll(getAnswers());
-      mark();
+      br.mark();
       String nextLine = br.readLine();
-      if (nextLine != null && nextLine.startsWith(OUTPUT_TAG)) {
-         String expectedOutput = readLinesUntilNextTag(nextLine, OUTPUT_TAG);
+      if (OUTPUT.isMatch(nextLine)) {
+         String expectedOutput = readLinesUntilNextTag(nextLine, OUTPUT);
          query.setExpectedOutput(expectedOutput);
          query.setContinuesUntilFails();
 
-         mark();
+         br.mark();
          nextLine = br.readLine();
       }
-      if (nextLine != null && equalsIgnoringLeadingAndTrailingWhitespace(nextLine, QUIT_TAG)) {
+
+      if (QUIT.isMatch(nextLine)) {
          query.setQuitsBeforeFindingAllAnswers();
-      } else if (nextLine != null && equalsIgnoringLeadingAndTrailingWhitespace(nextLine, NO_TAG)) {
+      } else if (NO.isMatch(nextLine)) {
          query.setContinuesUntilFails();
-      } else if (nextLine != null && nextLine.startsWith(EXCEPTION_TAG)) {
-         String expectedExceptionMessage = readLinesUntilNextTag(nextLine, EXCEPTION_TAG);
+      } else if (ERROR.isMatch(nextLine)) {
+         String expectedExceptionMessage = readLinesUntilNextTag(nextLine, ERROR);
          query.setExpectedExceptionMessage(expectedExceptionMessage);
       } else {
-         reset();
+         br.reset();
       }
+
       return query;
    }
 
    private List<ProjogTestAnswer> getAnswers() throws IOException {
       List<ProjogTestAnswer> answers = new ArrayList<>();
+      ProjogTestAnswer first = null;
       ProjogTestAnswer answer;
       while ((answer = getAnswer()) != null) {
+         if (first == null) {
+            first = answer;
+         } else if (!answer.getVariableIds().equals(first.getVariableIds())) {
+            throw new RuntimeException("Answers have different variable Ids: " + first.getVariableIds() + " versus: " + answer.getVariableIds());
+         }
          answers.add(answer);
       }
       return answers;
    }
 
    private ProjogTestAnswer getAnswer() throws IOException {
-      mark();
+      br.mark();
       String line = br.readLine();
       if (line == null) {
          // end of file
          return null;
       }
+      if (line.trim().isEmpty()) {
+         // blank line
+         return null;
+      }
+
       ProjogTestAnswer answer = new ProjogTestAnswer();
 
-      if (line.startsWith(OUTPUT_TAG)) {
-         String expectedOutput = readLinesUntilNextTag(line, OUTPUT_TAG);
+      if (OUTPUT.isMatch(line)) {
+         String expectedOutput = readLinesUntilNextTag(line, OUTPUT);
          line = br.readLine();
          if (line == null) {
-            reset();
+            br.reset();
             return null;
          }
          answer.setExpectedOutput(expectedOutput);
       }
-      if (line.startsWith(ANSWER_NO_VARIABLES_TAG)) {
+
+      if (YES.isMatch(line)) {
          // query succeeds but no variables to check
          return answer;
-      } else if (equalsIgnoringLeadingAndTrailingWhitespace(line, ANSWER_TAG)) {
-         // query succeeds with variables to check
-         addAssignments(answer);
-         return answer;
-      } else if (line.startsWith(ANSWER_TAG)) {
-         // query succeeds with single variable to check
-         addAssignment(answer, line);
+      }
+
+      if (isAssignment(line)) {
+         Assignment a;
+         while ((a = getAssignment(line)) != null && !answer.hasVariableId(a.getVariableId())) {
+            answer.addAssignment(a.getVariableId(), a.getExpectedValue());
+            br.mark();
+            line = br.readLine();
+         }
+
+         br.reset();
          return answer;
       } else {
-         reset();
+         br.reset();
          return null;
       }
    }
 
-   private void addAssignments(ProjogTestAnswer answer) throws IOException {
-      String next;
-      while (!(next = br.readLine()).startsWith(ANSWER_TAG)) {
-         addAssignment(answer, next);
+   private boolean isAssignment(String line) {
+      return getAssignment(line) != null;
+   }
+
+   private Assignment getAssignment(String line) {
+      if (line == null) {
+         return null;
       }
+
+      line = line.trim();
+      if (!line.startsWith("%")) {
+         return null;
+      }
+
+      if (Markup.isMarkup(line)) {
+         return null;
+      }
+
+      line = line.substring(1).trim();
+
+      int equalsPos = line.indexOf('=');
+      if (equalsPos == -1) {
+         return null;
+      }
+
+      return new Assignment(line.substring(0, equalsPos).trim(), line.substring(equalsPos + 1).trim());
    }
 
-   private void addAssignment(ProjogTestAnswer answer, String line) {
-      String assignmentStatement = getText(line);
-      int equalsPos = assignmentStatement.indexOf('=');
-      String variableId = assignmentStatement.substring(0, equalsPos).trim();
-      String expectedValue = assignmentStatement.substring(equalsPos + 1).trim();
-      answer.addAssignment(variableId, expectedValue);
-   }
-
-   private String readLinesUntilNextTag(String line, String tagName) throws IOException {
-      String textOnSameLineAsTag = getText(line);
+   private String readLinesUntilNextTag(String line, Markup markup) throws IOException {
+      String textOnSameLineAsTag = markup.parseText(line);
       if (textOnSameLineAsTag.length() > 0) {
          return textOnSameLineAsTag;
       } else {
          StringBuilder sb = new StringBuilder();
          boolean first = true;
-         while (!(line = br.readLine()).startsWith(tagName)) {
+         while (!markup.isMatch(line = br.readLine())) {
             if (first) {
                first = false;
             } else {
@@ -326,14 +361,14 @@ public final class ProjogTestParser implements Closeable {
 
    private String getComment(final String line) throws IOException {
       StringBuilder comment = new StringBuilder(line.substring(1).trim());
-      mark();
+      br.mark();
       String next;
       while ((next = br.readLine()) != null && isStandardComment(next)) {
          comment.append(' ');
          comment.append(next.substring(1).trim());
-         mark();
+         br.mark();
       }
-      reset();
+      br.reset();
       return comment.toString().trim();
    }
 
@@ -345,7 +380,15 @@ public final class ProjogTestParser implements Closeable {
     * directly after the {@code %} comment character.
     */
    private boolean isStandardComment(final String line) {
-      return line.startsWith(COMMENT_CHARACTER) && line.length() > 1 && Character.isWhitespace(line.charAt(1));
+      if (!line.startsWith(COMMENT_CHARACTER)) {
+         return false;
+      } else if (line.length() == 1) {
+         return false;
+      } else if (!Character.isWhitespace(line.charAt(1))) {
+         return false;
+      } else {
+         return true;
+      }
    }
 
    /**
@@ -354,47 +397,23 @@ public final class ProjogTestParser implements Closeable {
     * In this context, a "mark-up" comment is a comment used to provide specify system tests. Mark-up comments are
     * identified by having no whitespace directly after the {@code %} comment character.
     */
-   private boolean isMarkupComment(final String line) {
-      return line.startsWith(COMMENT_CHARACTER) && !isStandardComment(line) && !line.trim().equals(COMMENT_CHARACTER);
-   }
-
-   /**
-    * Get text minus any sys-test markup.
-    *
-    * @param line e.g.: {@code %QUERY X is 1}
-    * @return e.g.: {@code X is 1}
-    */
-   private static String getText(String line) {
-      line = line.trim();
-      int spacePos = line.indexOf(' ');
-      if (spacePos == -1) {
-         return "";
-      } else {
-         return line.substring(spacePos + 1).trim();
+   private boolean isIllegalComment(final String line) {
+      String trimmed = line.trim();
+      if (!trimmed.startsWith(COMMENT_CHARACTER)) {
+         return false;
       }
-   }
-
-   private static boolean equalsIgnoringLeadingAndTrailingWhitespace(String a, String b) {
-      return a.trim().equals(b.trim());
-   }
-
-   private void mark() throws IOException {
-      br.mark(1024);
-   }
-
-   private void reset() throws IOException {
-      br.reset();
-      br.mark(0);
-   }
-
-   @Override
-   public void close() {
-      try {
-         if (br != null) {
-            br.close();
-         }
-      } catch (Exception e) {
-         e.printStackTrace();
+      if (trimmed.length() == 1) {
+         return false;
       }
+      if (!Character.isWhitespace(trimmed.charAt(1))) {
+         return true;
+      }
+
+      String sanitised = COMMENT_CHARACTER + trimmed.substring(1).trim().toUpperCase();
+      if (Markup.isMarkup(sanitised)) {
+         return true;
+      }
+
+      return false;
    }
 }

@@ -1,0 +1,52 @@
+Completed 41 queries from 4 files with 27 failures in: ???ms
+
+src/test/resources/org.projog.abc.Qwerty.pl
+Completed 23 queries with 14 failures in: ???ms
+src/test/resources/org.projog.qwe.Fghjkl.pl
+Completed 3 queries with 3 failures in: ???ms
+src/test/resources/org.projog.qwe.Xyz.pl
+Completed 8 queries with 5 failures in: ???ms
+src/test/resources/org.projog.xyz.Abc.pl
+Completed 7 queries with 5 failures in: ???ms
+
+ ***** Failed: 27 tests!!! *****
+
+src/test/resources/org.projog.abc.Qwerty.pl Query: 1=2 Error: Less answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: X=1 Error: Different number of variables than expected. Actual: [X] Expected: []
+src/test/resources/org.projog.abc.Qwerty.pl Query: repeat(2) Error: More answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: 4>2 Error: More answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: repeat Error: More answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: 1=2 Error: Less answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: p(S) Error: Did not have to fail before determining there were no more answers
+src/test/resources/org.projog.abc.Qwerty.pl Query: p(Q) Error: More answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: p(X) Error: More answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: p(Y) Error: Less answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: p(Z) Error: More answers than expected
+src/test/resources/org.projog.abc.Qwerty.pl Query: p(W) Error: Query did not produce the expected error: dummy error message
+src/test/resources/org.projog.abc.Qwerty.pl Query: repeat(3) Error: Found all answers before quit
+src/test/resources/org.projog.abc.Qwerty.pl Query: true Error: Found all answers before quit
+src/test/resources/org.projog.qwe.Fghjkl.pl Query: X is a Error: Expected: >Cannot find arithmetic operator: a< but got: >Cannot find arithmetic operator: a/0<
+src/test/resources/org.projog.qwe.Fghjkl.pl Query: X is a Error: Expected: >Cannot find arithmetic operator: z< but got: >Cannot find arithmetic operator: a/0<
+src/test/resources/org.projog.qwe.Fghjkl.pl Query: X is a Error: Expected: >null< but got: >Cannot find arithmetic operator: a/0<
+src/test/resources/org.projog.qwe.Xyz.pl Query: X is 1+1 Error: X (2) assigned to: 2 not: 3 [X=3]
+src/test/resources/org.projog.qwe.Xyz.pl Query: X is 1+1, Y=3 Error: Different number of variables than expected. Actual: [X, Y] Expected: [X=2]
+src/test/resources/org.projog.qwe.Xyz.pl Query: X is 1+1, Y=3, Z=4 Error: Different number of variables than expected. Actual: [X, Y, Z] Expected: [W=2, X=2, Y=3, Z=4]
+src/test/resources/org.projog.qwe.Xyz.pl Query: X=3, repeat(X) Error: More answers than expected
+src/test/resources/org.projog.qwe.Xyz.pl Query: Z=3, repeat(Z) Error: Less answers than expected
+src/test/resources/org.projog.xyz.Abc.pl Query: write(hello) Error: Expected: >
+hi
+< but got: >
+hello
+<
+src/test/resources/org.projog.xyz.Abc.pl Query: write(hello), nl, write(world), nl Error: Expected: >
+hello
+earth
+
+< but got: >
+hello
+world
+
+<
+src/test/resources/org.projog.xyz.Abc.pl Query: z(Z), write(here), write(Z), Y is Z*2 Error: Expected: >Cannot find arithmetic operator: q< but got: >Cannot find arithmetic operator: q/0<
+src/test/resources/org.projog.xyz.Abc.pl Query: z(Z), write(here), write(Z), Y is Z*2 Error: Expected: >Cannot find arithmetic operator: q< but got: >Cannot find arithmetic operator: q/0<
+src/test/resources/org.projog.xyz.Abc.pl Query: z(Z), write(here), write(Z), Y is Z*2 Error: Expected: >null< but got: >Cannot find arithmetic operator: q/0<

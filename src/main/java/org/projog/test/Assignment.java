@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 S. Webber
+ * Copyright 2021 S. Webber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,21 @@
  */
 package org.projog.test;
 
-/**
- * Represents a Prolog comment contained in a system test file.
- *
- * @see ProjogTestParser
- */
-public final class ProjogTestComment implements ProjogTestContent {
-   private final String comment;
+/** Represents an expected variable assignment resulting from a specific evaluation of a query. */
+class Assignment {
+   private final String variableId;
+   private final String expectedValue;
 
-   ProjogTestComment(String comment) {
-      this.comment = comment;
+   Assignment(String variableId, String expectedValue) {
+      this.variableId = variableId;
+      this.expectedValue = expectedValue;
    }
 
-   public String getComment() {
-      return comment;
+   String getVariableId() {
+      return variableId;
+   }
+
+   String getExpectedValue() {
+      return expectedValue;
    }
 }

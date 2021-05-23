@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 S. Webber
+ * Copyright 2021 S. Webber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,23 @@
  */
 package org.projog.test;
 
-/**
- * Represents a Prolog comment contained in a system test file.
- *
- * @see ProjogTestParser
- */
-public final class ProjogTestComment implements ProjogTestContent {
-   private final String comment;
+import org.projog.api.Projog;
+import org.projog.api.QueryResult;
 
-   ProjogTestComment(String comment) {
-      this.comment = comment;
+public interface ProjogTestRunnerConfig {
+   default Projog createProjog() {
+      return new Projog();
    }
 
-   public String getComment() {
-      return comment;
+   default QueryResult executeQuery(Projog projog, String query) {
+      return projog.createPlan(query).executeQuery();
+   }
+
+   default boolean doIgnoreFailedRetries() {
+      return false;
+   }
+
+   default boolean isParallel() {
+      return false;
    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 S. Webber
+ * Copyright 2013 S. Webber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.projog.test;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Represents an answer to a query contained in a system test file.
@@ -35,25 +36,33 @@ public final class ProjogTestAnswer {
     * <p>
     * Key = variable id. Value = String representation of assigned term.
     */
-   private final Map<String, String> assignments = new TreeMap<String, String>();
+   private final Map<String, String> assignments = new TreeMap<>();
 
    void setExpectedOutput(String expectedOuput) {
       this.expectedOuput = expectedOuput;
    }
 
-   public String getExpectedOutput() {
+   String getExpectedOutput() {
       return expectedOuput;
    }
 
    void addAssignment(String variableId, String expectedValue) {
-      if (assignments.containsKey(variableId)) {
+      if (hasVariableId(variableId)) {
          throw new IllegalStateException("Duplicate values provided for variable: " + variableId);
       }
       assignments.put(variableId, expectedValue);
    }
 
+   boolean hasVariableId(String key) {
+      return assignments.containsKey(key);
+   }
+
    String getAssignedValue(String variableId) {
       return assignments.get(variableId);
+   }
+
+   Set<String> getVariableIds() {
+      return new TreeSet<>(assignments.keySet());
    }
 
    public Set<Map.Entry<String, String>> getAssignments() {

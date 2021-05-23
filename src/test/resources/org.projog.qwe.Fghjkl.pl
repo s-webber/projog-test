@@ -1,8 +1,10 @@
-%QUERY X is a
+% Tests use of %ERROR.
+
+%?- X is a
 %ERROR Cannot find arithmetic operator: a
 
-%QUERY X is a
+%?- X is a
 %ERROR Cannot find arithmetic operator: z
 
-%QUERY X is a
-%ANSWER X=a
+%?- X is a
+% X=a

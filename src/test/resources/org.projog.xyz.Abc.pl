@@ -1,83 +1,67 @@
-%QUERY write(hello)
+% Tests use of %OUTPUT.
+
+%?- write(hello)
 %OUTPUT hello
-%ANSWER/
+%YES
 
-%QUERY write(hello)
+%?- write(hello)
 %OUTPUT hi
-%ANSWER/
+%YES
 
-%QUERY write(hello), nl, write(world), nl
+%?- write(hello), nl, write(world), nl
 %OUTPUT
 %hello
 %world
 %
 %OUTPUT
-%ANSWER/
+%YES
 
-%QUERY write(hello), nl, write(world), nl
+%?- write(hello), nl, write(world), nl
 %OUTPUT
 %hello
 %earth
 %
 %OUTPUT
-%ANSWER/
+%YES
 
 z(1).
 z(2).
 z(3).
 z(q).
 
-%QUERY z(Z), write(here), write(Z), Y is Z*2
+%?- z(Z), write(here), write(Z), Y is Z*2
 %OUTPUT here1
-%ANSWER
 % Z=1
 % Y=2
-%ANSWER
 %OUTPUT here2
-%ANSWER
 % Z=2
 % Y=4
-%ANSWER
 %OUTPUT here3
-%ANSWER
 % Z=3
 % Y=6
-%ANSWER
 %OUTPUT hereq
 %ERROR Cannot find arithmetic operator: q
 
-%QUERY z(Z), write(here), write(Z), Y is Z*2
+%?- z(Z), write(here), write(Z), Y is Z*2
 %OUTPUT here1
-%ANSWER
 % Z=1
 % Y=2
-%ANSWER
 %OUTPUT here2
-%ANSWER
 % Z=2
 % Y=4
-%ANSWER
 %OUTPUT here3
-%ANSWER
 % Z=3
 % Y=6
-%ANSWER
 %ERROR Cannot find arithmetic operator: q
 
-%QUERY z(Z), write(here), write(Z), Y is Z*2
+%?- z(Z), write(here), write(Z), Y is Z*2
 %OUTPUT here1
-%ANSWER
 % Z=1
 % Y=2
-%ANSWER
 %OUTPUT here2
-%ANSWER
 % Z=2
 % Y=4
-%ANSWER
 %OUTPUT here3
-%ANSWER
 % Z=3
 % Y=6
-%ANSWER
 %OUTPUT hereq

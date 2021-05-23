@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 S. Webber
+ * Copyright 2013 S. Webber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,24 +24,71 @@ import static org.projog.test.ProjogTestUtils.toUnixLineEndings;
 import java.io.File;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import com.tngtech.java.junit.dataprovider.DataProvider;
+import com.tngtech.java.junit.dataprovider.DataProviderRunner;
+
+@RunWith(DataProviderRunner.class)
 public class ProjogTestRunnerTest {
    private static final File TEST_RESOURCES_DIR = new File("src/test/resources");
 
    @Test
-   public void test() {
-      final String expectedErrorMessages = getExpectedErrorMessages();
+   @DataProvider({"true", "false"})
+   public void testDoNotIgnoreFailedRetries(boolean isParallel) {
+      final String expectedErrorMessages = readText(new File(TEST_RESOURCES_DIR, "ProjogTestRunnerTest_DoNotIgnoreFailedRetries_ExpectedErrors.txt"));
+      final String expectedSummary = readText(new File(TEST_RESOURCES_DIR, "ProjogTestRunnerTest_DoNotIgnoreFailedRetries_ExpectedSummary.txt"));
       final int expectedScriptsCount = 4;
-      final int expectedQueryCount = 23;
-      final int expectedErrorCount = 16;
+      final int expectedQueryCount = 41;
+      final int expectedErrorCount = 29;
 
-      ProjogTestRunner.TestResults r = ProjogTestRunner.runTests(TEST_RESOURCES_DIR);
+      ProjogTestRunner.TestResults r = ProjogTestRunner.runTests(TEST_RESOURCES_DIR, new ProjogTestRunnerConfig() {
+         @Override
+         public boolean isParallel() {
+            return isParallel;
+         }
+      });
       assertIgnoringCarriageReturns(expectedErrorMessages, r.getErrorMessages());
+      assertIgnoringCarriageReturns(expectedSummary, r.getSummary().replaceAll("\\d+ms", "???ms"));
       assertEquals(expectedScriptsCount, r.getScriptsCount());
       assertEquals(expectedQueryCount, r.getQueryCount());
       assertEquals(expectedErrorCount, r.getErrorCount());
       assertTrue(r.hasFailures());
-      assertTrue(r.getSummary().startsWith("Completed " + expectedQueryCount + " queries from " + expectedScriptsCount + " files with " + expectedErrorCount + " failures"));
+
+      try {
+         r.assertSuccess();
+         fail();
+      } catch (RuntimeException e) {
+         assertIgnoringCarriageReturns(expectedErrorCount + " test failures:\n" + expectedErrorMessages, e.getMessage());
+      }
+   }
+
+   @Test
+   @DataProvider({"true", "false"})
+   public void testDoIgnoreFailedRetries(boolean isParallel) {
+      final String expectedErrorMessages = readText(new File(TEST_RESOURCES_DIR, "ProjogTestRunnerTest_DoIgnoreFailedRetries_ExpectedErrors.txt"));
+      final String expectedSummary = readText(new File(TEST_RESOURCES_DIR, "ProjogTestRunnerTest_DoIgnoreFailedRetries_ExpectedSummary.txt"));
+      final int expectedScriptsCount = 4;
+      final int expectedQueryCount = 41;
+      final int expectedErrorCount = 27;
+
+      ProjogTestRunner.TestResults r = ProjogTestRunner.runTests(TEST_RESOURCES_DIR, new ProjogTestRunnerConfig() {
+         @Override
+         public boolean doIgnoreFailedRetries() {
+            return true;
+         }
+
+         @Override
+         public boolean isParallel() {
+            return isParallel;
+         }
+      });
+      assertIgnoringCarriageReturns(expectedErrorMessages, r.getErrorMessages());
+      assertIgnoringCarriageReturns(expectedSummary, r.getSummary().replaceAll("\\d+ms", "???ms"));
+      assertEquals(expectedScriptsCount, r.getScriptsCount());
+      assertEquals(expectedQueryCount, r.getQueryCount());
+      assertEquals(expectedErrorCount, r.getErrorCount());
+      assertTrue(r.hasFailures());
 
       try {
          r.assertSuccess();
@@ -53,9 +100,5 @@ public class ProjogTestRunnerTest {
 
    private void assertIgnoringCarriageReturns(String expected, String actual) {
       assertEquals(toUnixLineEndings(expected), toUnixLineEndings(actual));
-   }
-
-   private String getExpectedErrorMessages() {
-      return readText(new File(TEST_RESOURCES_DIR, "ProjogTestRunnerTest_ExpectedErrors.txt"));
    }
 }
