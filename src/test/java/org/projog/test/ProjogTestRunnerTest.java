@@ -16,12 +16,15 @@
 package org.projog.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.projog.test.ProjogTestUtils.readText;
 import static org.projog.test.ProjogTestUtils.toUnixLineEndings;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +34,22 @@ import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 
 @RunWith(DataProviderRunner.class)
 public class ProjogTestRunnerTest {
-   private static final File TEST_RESOURCES_DIR = new File("src/test/resources");
+   private static final String TEST_RESOURCES_DIR_NAME = "src/test/resources/";
+   private static final File TEST_RESOURCES_DIR = new File(TEST_RESOURCES_DIR_NAME);
+
+   @Test
+   public void testSimple() throws IOException {
+      File f = File.createTempFile(getClass().getName(), ".pl", new File("target"));
+      Files.write(f.toPath(), "%?- X is 1 + Y\n%ERROR Cannot get Numeric for term: Y of type: VARIABLE".getBytes());
+      ProjogTestRunner.TestResults r = ProjogTestRunner.runTests(f, new ProjogTestRunnerConfig() {
+      });
+      r.assertSuccess();
+      assertFalse(r.hasFailures());
+      assertEquals(1, r.getScriptsCount());
+      assertEquals(1, r.getQueryCount());
+      assertEquals(0, r.getErrorCount());
+      assertTrue(r.getErrorMessages().isEmpty());
+   }
 
    @Test
    @DataProvider({"true", "false"})
@@ -48,8 +66,8 @@ public class ProjogTestRunnerTest {
             return isParallel;
          }
       });
-      assertIgnoringCarriageReturns(expectedErrorMessages, r.getErrorMessages());
-      assertIgnoringCarriageReturns(expectedSummary, r.getSummary().replaceAll("\\d+ms", "???ms"));
+      assertIgnoringPlatformDifferences(expectedErrorMessages, r.getErrorMessages());
+      assertIgnoringPlatformDifferences(expectedSummary, r.getSummary().replaceAll("\\d+ms", "???ms"));
       assertEquals(expectedScriptsCount, r.getScriptsCount());
       assertEquals(expectedQueryCount, r.getQueryCount());
       assertEquals(expectedErrorCount, r.getErrorCount());
@@ -59,7 +77,7 @@ public class ProjogTestRunnerTest {
          r.assertSuccess();
          fail();
       } catch (RuntimeException e) {
-         assertIgnoringCarriageReturns(expectedErrorCount + " test failures:\n" + expectedErrorMessages, e.getMessage());
+         assertIgnoringPlatformDifferences(expectedErrorCount + " test failures:\n" + expectedErrorMessages, e.getMessage());
       }
    }
 
@@ -83,8 +101,8 @@ public class ProjogTestRunnerTest {
             return isParallel;
          }
       });
-      assertIgnoringCarriageReturns(expectedErrorMessages, r.getErrorMessages());
-      assertIgnoringCarriageReturns(expectedSummary, r.getSummary().replaceAll("\\d+ms", "???ms"));
+      assertIgnoringPlatformDifferences(expectedErrorMessages, r.getErrorMessages());
+      assertIgnoringPlatformDifferences(expectedSummary, r.getSummary().replaceAll("\\d+ms", "???ms"));
       assertEquals(expectedScriptsCount, r.getScriptsCount());
       assertEquals(expectedQueryCount, r.getQueryCount());
       assertEquals(expectedErrorCount, r.getErrorCount());
@@ -94,11 +112,18 @@ public class ProjogTestRunnerTest {
          r.assertSuccess();
          fail();
       } catch (RuntimeException e) {
-         assertIgnoringCarriageReturns(expectedErrorCount + " test failures:\n" + expectedErrorMessages, e.getMessage());
+         assertIgnoringPlatformDifferences(expectedErrorCount + " test failures:\n" + expectedErrorMessages, e.getMessage());
       }
    }
 
-   private void assertIgnoringCarriageReturns(String expected, String actual) {
-      assertEquals(toUnixLineEndings(expected), toUnixLineEndings(actual));
+   /** Assert the two given Strings are equal, ignoring platform-specific line-endings and directory-separators. */
+   private void assertIgnoringPlatformDifferences(String expected, String actual) {
+      assertEquals(toPlatformIndependant(expected), toPlatformIndependant(actual));
+   }
+
+   /** Replace windows style line-endings and directory-separators with unix versions. */
+   private String toPlatformIndependant(String input) {
+      String windowsStylePathName = TEST_RESOURCES_DIR_NAME.replace('/', '\\');
+      return toUnixLineEndings(input).replace(windowsStylePathName, TEST_RESOURCES_DIR_NAME);
    }
 }

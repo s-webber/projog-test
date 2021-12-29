@@ -148,13 +148,14 @@ final class ScriptRunner implements ProjogListener {
             throw new RuntimeException("Query did not produce the expected error: " + query.getExpectedExceptionMessage());
          }
       } catch (ProjogException pe) {
+         debug(pe);
          String actual = pe.getMessage();
          String expected = query.getExpectedExceptionMessage();
          if (actual.equals(expected) == false) {
             throw new RuntimeException("Expected: >" + expected + "< but got: >" + actual + "<", pe);
          }
-         if (expectedAnswers.hasNext()) {
-            throw new RuntimeException("Less answers than expected");
+         if (expectedAnswers != null && expectedAnswers.hasNext()) {
+            throw new RuntimeException("Less answers than expected", pe);
          }
       } finally {
          closeOutput(redirectedOutputFileHandle);
