@@ -154,7 +154,7 @@ public final class ProjogTestParser {
    /**
     * @throws RuntimeException if script has no tests and no links
     */
-   static List<ProjogTestQuery> getQueries(File testScript) {
+   public static List<ProjogTestQuery> getQueries(File testScript) {
       boolean hasLinks = false;
       try {
          ProjogTestParser p = new ProjogTestParser(testScript);
@@ -176,7 +176,7 @@ public final class ProjogTestParser {
       }
    }
 
-   ProjogTestParser(File testScript) throws IOException {
+   public ProjogTestParser(File testScript) throws IOException {
       br = new LookAheadLineReader(testScript);
    }
 

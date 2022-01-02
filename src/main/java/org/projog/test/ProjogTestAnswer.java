@@ -42,7 +42,7 @@ public final class ProjogTestAnswer {
       this.expectedOuput = expectedOuput;
    }
 
-   String getExpectedOutput() {
+   public String getExpectedOutput() {
       return expectedOuput;
    }
 
@@ -53,15 +53,15 @@ public final class ProjogTestAnswer {
       assignments.put(variableId, expectedValue);
    }
 
-   boolean hasVariableId(String key) {
+   public boolean hasVariableId(String key) {
       return assignments.containsKey(key);
    }
 
-   String getAssignedValue(String variableId) {
+   public String getAssignedValue(String variableId) {
       return assignments.get(variableId);
    }
 
-   Set<String> getVariableIds() {
+   public Set<String> getVariableIds() {
       return new TreeSet<>(assignments.keySet());
    }
 
@@ -69,7 +69,7 @@ public final class ProjogTestAnswer {
       return new TreeMap<>(assignments).entrySet();
    }
 
-   int getAssignmentsCount() {
+   public int getAssignmentsCount() {
       return assignments.size();
    }
 
