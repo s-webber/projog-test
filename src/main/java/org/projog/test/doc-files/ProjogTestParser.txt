@@ -17,7 +17,6 @@ ProjogTestQuery o-- ProjogTestAnswer
 ProjogTestParser ..> ProjogTestContent
 
 ProjogTestRunner o-- ProjogTestParser
-CodeExamplesWebPageCreator o-- ProjogTestParser
 
 show ProjogTestParser method
 @enduml
