@@ -6,6 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 
   <groupId>org.projog</groupId>
   <artifactId>projog-test</artifactId>
+  <version>0.6.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>projog-test</name>
