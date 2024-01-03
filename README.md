@@ -1,4 +1,5 @@
 # projog-test
+[![Build Status](https://github.com/s-webber/projog-test/actions/workflows/github-actions.yml/badge.svg)](https://github.com/s-webber/projog-test/actions/)
 [![Maven Central](https://img.shields.io/maven-central/v/org.projog/projog-test.svg)](https://search.maven.org/search?q=g:org.projog)
 [![License](https://img.shields.io/badge/license-Apache%20v2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
