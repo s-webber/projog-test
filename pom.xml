@@ -36,6 +36,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
    </scm>
 
    <properties>
+      <maven.compiler.release>8</maven.compiler.release>
       <maven.compiler.source>8</maven.compiler.source>
       <maven.compiler.target>8</maven.compiler.target>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,7 +46,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <dependency>
          <groupId>org.projog</groupId>
          <artifactId>projog-core</artifactId>
-         <version>0.10.0</version>
+         <version>0.11.0</version>
       </dependency>
 
       <dependency>
@@ -78,7 +79,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
          <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.10</version>
+            <version>0.8.14</version>
             <executions>
                <execution>
                   <id>default-prepare-agent</id>
